@@ -1,3 +1,5 @@
+import random
+
 import pygame
 from Word import Word
 
@@ -23,10 +25,11 @@ bg_image = pygame.transform.scale(bg_image, (WIDTH, HEIGHT))
 file = open("words.txt", "r")
 data = file.readlines()
 
+# reload rate for the words
+word_reload = 20
+
 clock = pygame.time.Clock()
 FPS = 30
-
-text = my_font.render("asd", True, WHITE)
 
 
 # Define main function
@@ -34,24 +37,28 @@ def main():
     running = True
 
     # Create Sprite group
-    words = pygame.sprite.Group()
-    word1 = Word(data[4], 5, WHITE, 10, 10, 10, screen)
-    words.add(word1)
+    sprites = pygame.sprite.Group()
+    word_reload_counter = word_reload
 
     while running:
+        # if word_reload_counter is not zero then subtract one
+        # so go through the refreshes *word_reload* times then create a sprite
+        if word_reload_counter:
+            word_reload_counter -= 1
+        else:
+            word = Word(data[random.randint(0, len(data)-1)], GREEN, 5)
+            sprites.add(word)
+            word_reload_counter = word_reload
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # Drawing the image at position (0, 0)
-        # screen.blit(bg_image, (0, 0))
+        # Update and draw sprites only if there are events
+        sprites.update()
+        screen.blit(bg_image, (0, 0))  # Draw background image
+        sprites.draw(screen)  # Draw words
         pygame.display.update()
         clock.tick(FPS)
-
-        words.draw(screen)
-        # screen.blit(text, (0, 0))
-
-        # pygame.time.set_timer(pygame.event.Event(), 2000, 5)
 
 
 # The main function
