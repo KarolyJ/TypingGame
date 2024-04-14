@@ -22,14 +22,5 @@ class Word(pygame.sprite.Sprite):
         self.rect.x = random.randint(50, 800)
         self.rect.y = 0
 
-    def display(self):
-        text = my_font.render(self.value, True, self.color)
-        self.screen.blit(text)
-
     def update(self):
         self.rect.y += self.speed * self.speed / 10
-        if self.rect.y > 500:
-            self.kill()
-
-    def remove(self, words):
-        words = [word for word in words if word.rect.y > 400]
