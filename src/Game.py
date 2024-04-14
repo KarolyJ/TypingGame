@@ -26,7 +26,7 @@ file = open("words.txt", "r")
 data = file.readlines()
 
 # reload rate for the words
-word_reload = 20
+word_reload = 25
 
 # input rectangle
 input_rect = pygame.Rect(300, 450, 140, 32)
@@ -51,8 +51,7 @@ def main():
         if word_reload_counter:
             word_reload_counter -= 1
         else:
-            word = Word(data[random.randint(0, len(data)-1)].strip(), GREEN, 5, user_text)
-            print(word.inputText)
+            word = Word(data[random.randint(0, len(data)-1)].strip(), GREEN, 3)
             sprites.add(word)
             word_reload_counter = word_reload
         for event in pygame.event.get():
@@ -75,6 +74,13 @@ def main():
         # set width of textfield so that text cannot get
         # outside of user's text input
         input_rect.w = max(100, text_surface.get_width() + 10)
+
+        if len(sprites.sprites()) > 0:
+            for el in sprites.sprites():
+                if user_text == el.value:
+                    el.kill()
+                    user_text = ""
+
 
         # Update and draw sprites only if there are events
         sprites.update()
