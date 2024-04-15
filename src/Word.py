@@ -25,8 +25,9 @@ class Word(pygame.sprite.Sprite):
     def update(self):
         self.rect.y += self.speed * self.speed / 10
 
+
 class Button:
-    def __init__(self, x, y,  width, height, content, fontsize):
+    def __init__(self, x, y, width, height, content, fontsize):
         self.font = pygame.font.SysFont("arialunicode", fontsize)
         self.content = content
 
@@ -36,10 +37,10 @@ class Button:
         self.y = y
 
         self.image = pygame.Surface((self.width, self.height))
-        self.rect = self.image.get_rect(center=(WIDTH/2, y))
+        self.rect = self.image.get_rect(center=(WIDTH / 2, y))
 
         self.text = self.font.render(self.content, True, WHITE)
-        self.text_rect = self.text.get_rect(center=(self.width/2, self.height/2))
+        self.text_rect = self.text.get_rect(center=(self.width / 2, self.height / 2))
         self.image.blit(self.text, self.text_rect)
 
     def is_pressed(self, pos, pressed):

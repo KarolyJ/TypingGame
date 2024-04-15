@@ -21,7 +21,6 @@ class Pane(object):
         # input rectangle
         self.input_rect = pygame.Rect(300, 450, 140, 32)
         self.clock = pygame.time.Clock()
-        self.word_reload_counter = word_reload
         self.running = True
 
     def new(self):
@@ -30,9 +29,17 @@ class Pane(object):
         self.user_text = ""
         self.score = 0
         self.hp = 5
+        # reload rate for the words
+        self.word_reload = 35
+        self.word_reload_counter = self.word_reload
 
         # Create Sprite group
         self.sprites = pygame.sprite.Group()
+
+        # reading the high score
+        file_score = open("high_score.txt", "r")
+        self.high_score = file_score.readline()
+        file_score.close()
 
     def events(self):
         for event in pygame.event.get():
@@ -89,7 +96,8 @@ class Pane(object):
         # if the player loses all the hp, then it's game over :(
         if self.hp < 1:
             self.playing = False
-
+            # calling game over here because the other way around not the whole function got executed
+            self.gameOver()
         # if word_reload_counter is not zero then subtract one
         # so go through the refreshes *word_reload* times then create a sprite
         if self.word_reload_counter:
@@ -97,10 +105,22 @@ class Pane(object):
         else:
             word = Word(data[random.randint(0, len(data) - 1)].strip(), GREEN, 3)
             self.sprites.add(word)
-            self.word_reload_counter = word_reload
+            self.word_reload_counter = self.word_reload
 
-            # iterating through the sprites in the group and if the input text is equal
-            # to its value then killing it and resetting the input text
+        # difficulty is increasing by the high score of current game
+        if self.score > 100:
+            self.word_reload = 34
+        elif self.score > 200:
+            self.word_reload = 32
+        elif self.score > 300:
+            self.word_reload = 28
+        elif self.score > 400:
+            self.word_reload = 26
+        elif self.score > 500:
+            self.word_reload = 23
+
+        # iterating through the sprites in the group and if the input text is equal
+        # to its value then killing it and resetting the input text
         if len(self.sprites.sprites()) > 0:
             for el in self.sprites.sprites():
                 if self.user_text == el.value:
@@ -118,15 +138,26 @@ class Pane(object):
             self.events()
             self.update()
             self.draw()
-        self.running = False
 
     def gameOver(self):
-        pass
-        self.screen.fill(WHITE)
-        text = self.my_font.render('Game Over', True, WHITE)
-        text_rect = text.get_rect()
 
-        restart_button = Button(10, HEIGHT - 60, 120, 50, "Restart", 32)
+        text_game_over = self.my_font.render('Game Over', True, WHITE)
+        text_game_over_rect = text_game_over.get_rect(center=(WIDTH / 2, 50))
+
+        text_high_score = self.my_font.render("The high score: " + self.high_score, True, WHITE)
+        text_high_score_rect = text_high_score.get_rect(center=(WIDTH / 2, 100))
+
+        text_current_score = self.my_font.render("Your last score: " + str(self.score), True, WHITE)
+        text_current_score_rect = text_current_score.get_rect(center=(WIDTH / 2, 175))
+
+        restart_button = Button(10, 300, 120, 50, "Restart", 32)
+
+        # updating the high score
+        if int(self.high_score) < self.score:
+            file_score_writer = open("high_score.txt", "w")
+            file_score_writer.write(str(self.score))
+            file_score_writer.close()
+            print("new high score")
 
         for sprite in self.sprites.sprites():
             sprite.kill()
@@ -139,11 +170,23 @@ class Pane(object):
             mouse_pos = pygame.mouse.get_pos()
             mouse_pressed = pygame.mouse.get_pressed()
 
+            if restart_button.is_pressed(mouse_pos, mouse_pressed):
+                self.new()
+                self.mainFunc()
+
+            self.screen.blit(self.bg_image, (0, 0))
+            self.screen.blit(text_game_over, text_game_over_rect)
+            self.screen.blit(text_high_score, text_high_score_rect)
+            self.screen.blit(text_current_score, text_current_score_rect)
+            self.screen.blit(restart_button.image, restart_button.rect)
+            self.clock.tick(FPS)
+            pygame.display.update()
+
     def introScreen(self):
         intro = True
 
-        title = self.my_font.render("Typing Game",True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH/2, 50))
+        title = self.my_font.render("Typing Game", True, WHITE)
+        title_rect = title.get_rect(center=(WIDTH / 2, 50))
 
         play_button = Button(0, 150, 100, 50, "Start Game", 20)
 
@@ -159,7 +202,7 @@ class Pane(object):
             if play_button.is_pressed(mouse_pos, mouse_pressed):
                 intro = False
 
-            self.screen.blit(self.bg_image, (0,0))
+            self.screen.blit(self.bg_image, (0, 0))
             self.screen.blit(title, title_rect)
             self.screen.blit(play_button.image, play_button.rect)
             self.clock.tick(FPS)
@@ -173,7 +216,6 @@ g.new()
 
 while g.running:
     g.mainFunc()
-    g.gameOver()
 
 pygame.quit()
 sys.exit()
