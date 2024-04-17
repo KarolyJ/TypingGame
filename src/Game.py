@@ -87,6 +87,7 @@ class Pane(object):
         hp_text_rect.center = (100, 20)
         self.screen.blit(hp_text, hp_text_rect)
 
+        # the text changes colour if it matches the input, I do that by rendering a new layer on the text
         for el in self.sprites.sprites():
             if len(self.user_text) > 0:
                 if self.user_text in el.value[:len(self.user_text)]:
@@ -112,7 +113,7 @@ class Pane(object):
         if self.word_reload_counter:
             self.word_reload_counter -= 1
         else:
-            word = Word(self, data[random.randint(0, len(data) - 1)].strip(), GREEN, 3)
+            word = Word(data[random.randint(0, len(data) - 1)].strip(), GREEN, 3)
             self.sprites.add(word)
             self.word_reload_counter = self.word_reload
 
@@ -142,6 +143,9 @@ class Pane(object):
                     self.hp -= 1
 
     def mainFunc(self):
+        pygame.mixer.music.load("song.mp3")
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play()
         # game loop
         while self.playing:
             self.events()
