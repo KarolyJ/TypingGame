@@ -70,7 +70,7 @@ class Pane(object):
         self.input_rect.w = max(100, text_surface.get_width() + 10)
 
         # draw the input rectangle
-        pygame.draw.rect(self.screen, GREEN, self.input_rect)
+        # pygame.draw.rect(self.screen, GREEN, self.input_rect)
 
         # render at position stated in arguments
         self.screen.blit(text_surface, (self.input_rect.x + 5, self.input_rect.y + 5))
@@ -87,12 +87,21 @@ class Pane(object):
         hp_text_rect.center = (100, 20)
         self.screen.blit(hp_text, hp_text_rect)
 
+        for el in self.sprites.sprites():
+            if len(self.user_text) > 0:
+                if self.user_text in el.value[:len(self.user_text)]:
+                    layer = my_font.render(self.user_text, True, RED)
+                    layer_rect = layer.get_rect()
+                    layer_rect.x = el.rect.x
+                    layer_rect.y = el.rect.y
+                    self.screen.blit(layer, layer_rect)
+
         self.clock.tick(FPS)
         pygame.display.flip()
 
     def update(self):
         # game loop updates
-        self.sprites.update()
+        self.sprites.update(self.user_text)
         # if the player loses all the hp, then it's game over :(
         if self.hp < 1:
             self.playing = False
@@ -103,7 +112,7 @@ class Pane(object):
         if self.word_reload_counter:
             self.word_reload_counter -= 1
         else:
-            word = Word(data[random.randint(0, len(data) - 1)].strip(), GREEN, 3)
+            word = Word(self, data[random.randint(0, len(data) - 1)].strip(), GREEN, 3)
             self.sprites.add(word)
             self.word_reload_counter = self.word_reload
 
