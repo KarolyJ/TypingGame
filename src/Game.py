@@ -22,6 +22,7 @@ class Pane(object):
         self.input_rect = pygame.Rect(300, 450, 140, 32)
         self.clock = pygame.time.Clock()
         self.running = True
+        self.music_volume = 0.5
 
     def new(self):
         # a new game starts
@@ -30,7 +31,7 @@ class Pane(object):
         self.score = 0
         self.hp = 5
         # reload rate for the words
-        self.word_reload = 35
+        self.word_reload = 100
         self.word_reload_counter = self.word_reload
 
         # Create Sprite group
@@ -57,7 +58,8 @@ class Pane(object):
                 # unicode standard is used for string
                 # formation
                 else:
-                    self.user_text += event.unicode
+                    if event.key != pygame.K_SPACE:
+                        self.user_text += event.unicode
 
     def draw(self):
         self.screen.blit(self.bg_image, (0, 0))  # Draw background image
@@ -119,15 +121,27 @@ class Pane(object):
 
         # difficulty is increasing by the high score of current game
         if self.score > 100:
-            self.word_reload = 34
+            self.word_reload = 70
         elif self.score > 200:
-            self.word_reload = 32
+            self.word_reload = 60
         elif self.score > 300:
-            self.word_reload = 28
+            self.word_reload = 50
         elif self.score > 400:
-            self.word_reload = 26
+            self.word_reload = 40
         elif self.score > 500:
-            self.word_reload = 23
+            self.word_reload = 35
+        elif self.score > 600:
+            self.word_reload = 30
+        elif self.score > 700:
+            self.word_reload = 25
+        elif self.score > 800:
+            self.word_reload = 20
+        elif self.score > 900:
+            self.word_reload = 15
+        elif self.score > 1100:
+            self.word_reload = 10
+        elif self.score > 1500:
+            self.word_reload = 5
 
         # iterating through the sprites in the group and if the input text is equal
         # to its value then killing it and resetting the input text
@@ -138,14 +152,16 @@ class Pane(object):
                     self.user_text = ""
                     self.score += len(el.value)
                 # killing the sprite if it hits the floor and the player loses a hp
-                elif el.rect.y > 500:
+                elif el.rect.y > 600:
                     el.kill()
                     self.hp -= 1
 
     def mainFunc(self):
         pygame.mixer.music.load("song.mp3")
-        pygame.mixer.music.set_volume(0.5)
-        pygame.mixer.music.play()
+        pygame.mixer.music.set_volume(self.music_volume)
+        # if loop is set to -1 it play infinitely
+        pygame.mixer.music.play(loops=-1)
+
         # game loop
         while self.playing:
             self.events()
@@ -196,30 +212,79 @@ class Pane(object):
             pygame.display.update()
 
     def introScreen(self):
+        menu = True
         intro = True
+        settings = False
+        music_turned_on = True
 
         title = self.my_font.render("Typing Game", True, WHITE)
         title_rect = title.get_rect(center=(WIDTH / 2, 50))
 
         play_button = Button(0, 150, 100, 50, "Start Game", 20)
+        menu_button = Button(0, 250, 100, 50, "Settings", 20)
+        back_to_menu_button = Button(0, 450, 100, 50, 'Back', 20)
+        music_turned_on_button = Button(0, 350, 200, 50, 'Music Turned: On', 20)
+        music_turned_off_button = Button(0, 350, 200, 50, 'Music Turned: Off', 20)
 
-        while intro:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+        while menu:
+            while intro:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        menu = False
+                        intro = False
+                        self.running = False
+
+                mouse_pos = pygame.mouse.get_pos()
+                mouse_pressed = pygame.mouse.get_pressed()
+
+                if play_button.is_pressed(mouse_pos, mouse_pressed):
                     intro = False
-                    self.running = False
+                    menu = False
 
-            mouse_pos = pygame.mouse.get_pos()
-            mouse_pressed = pygame.mouse.get_pressed()
+                if menu_button.is_pressed(mouse_pos, mouse_pressed):
+                    intro = False
+                    settings = True
 
-            if play_button.is_pressed(mouse_pos, mouse_pressed):
-                intro = False
+                self.screen.blit(self.bg_image, (0, 0))
+                self.screen.blit(title, title_rect)
+                self.screen.blit(play_button.image, play_button.rect)
+                self.screen.blit(menu_button.image, menu_button.rect)
+                self.clock.tick(FPS)
+                pygame.display.update()
 
-            self.screen.blit(self.bg_image, (0, 0))
-            self.screen.blit(title, title_rect)
-            self.screen.blit(play_button.image, play_button.rect)
-            self.clock.tick(FPS)
-            pygame.display.update()
+            while settings:
+                mouse_pos = pygame.mouse.get_pos()
+                mouse_pressed = pygame.mouse.get_pressed()
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        menu = False
+                        settings = False
+                        self.running = False
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        if not music_turned_on:
+                            if music_turned_off_button.is_clicked_once(mouse_pos, pygame.MOUSEBUTTONDOWN):
+                                print("off is pressed")
+                                self.music_volume = 0.5
+                                music_turned_on = True
+                        elif music_turned_on:
+                            if music_turned_on_button.is_clicked_once(mouse_pos, pygame.MOUSEBUTTONDOWN):
+                                print("on is pressed")
+                                self.music_volume = 0
+                                music_turned_on = False
+
+                if back_to_menu_button.is_pressed(mouse_pos, mouse_pressed):
+                    settings = False
+                    intro = True
+
+                self.screen.blit(self.bg_image, (0, 0))
+                self.screen.blit(back_to_menu_button.image, back_to_menu_button.rect)
+                if music_turned_on:
+                    self.screen.blit(music_turned_on_button.image, music_turned_on_button.rect)
+                elif not music_turned_on:
+                    self.screen.blit(music_turned_off_button.image, music_turned_off_button.rect)
+                self.clock.tick(FPS)
+                pygame.display.update()
 
 
 # THE GAME LOOP

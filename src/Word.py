@@ -50,3 +50,10 @@ class Button:
                 return True
             return False
         return False
+
+    def is_clicked_once(self, pos, pressed):
+        if self.rect.collidepoint(pos):
+            if pressed:
+                return True
+        return False
+
