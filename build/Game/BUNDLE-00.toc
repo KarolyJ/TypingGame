@@ -1,0 +1,3 @@
+([('Game',
+   '/Users/karolyjonas/PycharmProjects/TypingGame/dist/Game',
+   'EXECUTABLE')],)
